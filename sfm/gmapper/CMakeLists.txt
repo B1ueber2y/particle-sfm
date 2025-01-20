@@ -21,22 +21,14 @@ option(SIMD_ENABLED "Whether to enable SIMD optimizations" ON)
 option(OPENMP_ENABLED "Whether to enable OpenMP parallelization" ON)
 option(IPO_ENABLED "Whether to enable interprocedural optimization" ON)
 option(PROFILING_ENABLED "Whether to enable google-perftools linker flags" OFF)
+option(FETCH_THEIA "Whether to use COLMAP with FetchContent or with self-installed software" ON)
+option(FETCH_COLMAP "Whether to use COLMAP with FetchContent or with self-installed software" ON)
 
 ################################################################################
 # Find packages
 ################################################################################
-
-if(OPENMP_ENABLED)
-    find_package(OpenMP REQUIRED)
-endif()
-
-find_package(Theia REQUIRED)
-find_package(COLMAP REQUIRED)
-message(STATUS "Ceres version: ${CERES_VERSION}")
-if(${CERES_VERSION} VERSION_LESS "2.2.0")
-    # ceres 2.2.0 changes the interface of local parameterization
-    add_definitions("-DCERES_PARAMETERIZATION_ENABLED")
-endif()
+include(cmake/FindDependencies.cmake)
+include(cmake/InitVariables.cmake)
 
 ################################################################################
 # Compiler specific configuration
@@ -105,27 +97,6 @@ endif()
 # Add sources
 ################################################################################
 
-# Generate source file with version definitions.
-set(GCOLMAP_INCLUDE_DIRS
-    ${COLMAP_INCLUDE_DIRS}
-    ${THEIA_INCLUDE_DIRS}
-)
-
-set(GCOLMAP_LINK_DIRS
-    ${COLMAP_LINK_DIRS}
-)
-
-set(GCOLMAP_EXTERNAL_LIBRARIES
-    ${CMAKE_DL_LIBS}
-    ${COLMAP_LIBRARIES}
-    ${THEIA_LIBRARIES}
-)
-
-if(OPENMP_FOUND)
-	message(STATUS "OpenMP: ${OpenMP_libomp_LIBRARY}")
-	list(APPEND GCOLMAP_EXTERNAL_LIBRARIES ${OpenMP_libomp_LIBRARY})
-endif()
-
 if(UNIX)
     list(APPEND GCOLMAP_EXTERNAL_LIBRARIES pthread)
 endif()
@@ -134,7 +105,6 @@ include_directories(
     src
     ${GCOLMAP_INCLUDE_DIRS}
 )
-link_directories(${GCOLMAP_LINK_DIRS})
 
 add_subdirectory(src)
 
@@ -208,11 +178,4 @@ endif()
 if(UNIX AND NOT APPLE)
     install(FILES "doc/GCOLMAP.desktop" DESTINATION "share/applications")
 endif()
-
-# Configure the uninstallation script.
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/CMakeUninstall.cmake.in"
-               "${CMAKE_CURRENT_BINARY_DIR}/CMakeUninstall.cmake"
-               IMMEDIATE @ONLY)
-add_custom_target(uninstall COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/CMakeUninstall.cmake)
-set_target_properties(uninstall PROPERTIES FOLDER ${CMAKE_TARGETS_ROOT_FOLDER})
 

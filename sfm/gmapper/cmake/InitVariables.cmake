@@ -1,0 +1,35 @@
+# External libraries
+set(GCOLMAP_EXTERNAL_LIBRARIES
+  ${CMAKE_DL_LIBS}
+  ${CERES_LIBRARIES}
+  ${FREEIMAGE_LIBRARIES}
+  ${HDF5_C_LIBRARIES}
+)
+
+# OpenMP
+if(OPENMP_FOUND)
+    list(APPEND GCOLMAP_EXTERNAL_LIBRARIES ${OpenMP_libomp_LIBRARY})
+endif()
+
+# theia
+if(NOT FETCH_THEIA)
+    list(APPEND GCOLMAP_EXTERNAL_LIBRARIES theia::theia)
+else()
+    list(APPEND GCOLMAP_EXTERNAL_LIBRARIES theia)
+endif()
+
+# colmap
+if(NOT FETCH_COLMAP)
+    list(APPEND GCOLMAP_EXTERNAL_LIBRARIES colmap::colmap)
+else()
+    list(APPEND GCOLMAP_EXTERNAL_LIBRARIES colmap)
+endif()
+
+# Init variables for directories
+set(GCOLMAP_INCLUDE_DIRS
+  ${HDF5_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIR}
+  ${FREEIMAGE_INCLUDE_DIRS}
+  ${COLMAP_INCLUDE_DIRS}
+  ${THEIA_INCLUDE_DIRS}
+)
